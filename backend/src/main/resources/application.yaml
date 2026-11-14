@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: assignments-chatbot
+  config:
+    # secrets.env lives at the repo root; works whether you start from /backend or the repo root.
+    import:
+      - optional:file:./secrets.env[.properties]
+      - optional:file:../secrets.env[.properties]
+  ai:
+    openai:
+      api-key: ${AZURE_FOUNDRY_API_KEY:missing-key}
+      base-url: ${AZURE_FOUNDRY_BASE_URL:https://your-resource.services.ai.azure.com/openai/v1}
+      microsoft-foundry: true
+      timeout: 180s
+      max-retries: 2
+      chat:
+        options:
+          model: ${AZURE_FOUNDRY_MODEL:gpt-6-luna}
+          # gpt-6-luna rejects function tools on /chat/completions unless reasoning is off.
+          reasoning-effort: none
+
+server:
+  port: ${PORT:8080}
+
+app:
+  entries-api:
+    base-url: https://trainer-central-assigments-api.onrender.com
+    page-size: 100
+    cache-ttl-seconds: 30
+  cors-allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
