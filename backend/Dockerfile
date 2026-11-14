@@ -1,17 +1,19 @@
-# ---- build (JDK 27 + Maven wrapper) ----
-FROM eclipse-temurin:27-jdk AS build
+# Native image build (GraalVM 25). Needs several GB of RAM while compiling; the runtime image is tiny.
+
+# ---- build ----
+FROM ghcr.io/graalvm/native-image-community:25 AS build
 WORKDIR /app
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
 RUN chmod +x mvnw && ./mvnw -q -B dependency:go-offline
 COPY src ./src
-RUN ./mvnw -q -B -DskipTests package
+RUN ./mvnw -q -B -Pnative -DskipTests native:compile
 
 # ---- run ----
-FROM eclipse-temurin:27-jre
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build /app/target/assignments-chatbot-*.jar app.jar
-# Small-heap tuning for Render's 512 MB plan: serial GC, C1-only JIT, small thread stacks.
-ENV JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -XX:MaxRAMPercentage=60 -XX:TieredStopAtLevel=1 -Xss512k"
+COPY --from=build /app/target/assignments-chatbot app
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Native images size their heap at runtime; cap it for Render's 512 MB plan.
+ENTRYPOINT ["./app", "-Xmx256m"]

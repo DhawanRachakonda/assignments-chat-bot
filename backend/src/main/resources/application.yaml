@@ -19,6 +19,12 @@ spring:
           # gpt-6-luna rejects function tools on /chat/completions unless reasoning is off.
           reasoning-effort: none
 
+  http:
+    clients:
+      imperative:
+        # JDK HttpClient: lightweight and native-image friendly (Reactor Netty needs extra native flags).
+        factory: jdk
+
 server:
   port: ${PORT:8080}
 

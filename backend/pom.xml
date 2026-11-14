@@ -16,7 +16,7 @@
   <name>assignments-chatbot</name>
 
   <properties>
-    <java.version>27</java.version>
+    <java.version>25</java.version>
     <spring-ai.version>2.0.2</spring-ai.version>
   </properties>
 

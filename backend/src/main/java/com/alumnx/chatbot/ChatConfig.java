@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import reactor.core.scheduler.Schedulers;
 
 @Configuration
 public class ChatConfig implements WebMvcConfigurer {
@@ -70,7 +71,9 @@ public class ChatConfig implements WebMvcConfigurer {
         return ChatClient.builder(model)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultTools(tools)
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(memory).build())
+                // Explicit scheduler: the builder's default is null inside a GraalVM native image.
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(memory)
+                        .scheduler(Schedulers.boundedElastic()).build())
                 .build();
     }
 
