@@ -11,6 +11,7 @@ RUN ./mvnw -q -B -DskipTests package
 FROM eclipse-temurin:27-jre
 WORKDIR /app
 COPY --from=build /app/target/assignments-chatbot-*.jar app.jar
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75"
+# Small-heap tuning for Render's 512 MB plan: serial GC, C1-only JIT, small thread stacks.
+ENV JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -XX:MaxRAMPercentage=60 -XX:TieredStopAtLevel=1 -Xss512k"
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
