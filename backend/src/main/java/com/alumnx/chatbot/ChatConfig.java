@@ -47,6 +47,8 @@ public class ChatConfig implements WebMvcConfigurer {
               count if it differs.
             - For "who submitted the most": rank learners by distinct submissions after merging aliases; list ties, \
               and show the counts.
+            - Format every answer in GitHub-flavored Markdown: **bold** key numbers and names, bullet lists for \
+              short lists, and pipe tables (header row plus separator row) for anything tabular.
             - Be concise, use short lists or small markdown tables, and name the assignment topics when relevant.
             - If the data cannot answer the question, say so plainly. Do not invent data.
             - Politely decline questions unrelated to assignments or the training programme.

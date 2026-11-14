@@ -12,6 +12,16 @@ const SUGGESTIONS = [
 
 const newId = () => crypto.randomUUID();
 
+// Tables scroll horizontally on small screens; links open in a new tab.
+const MD_COMPONENTS = {
+  table: ({ node, ...props }) => (
+    <div className="table-wrap">
+      <table {...props} />
+    </div>
+  ),
+  a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+};
+
 export default function App() {
   const [conversationId, setConversationId] = useState(newId);
   const [messages, setMessages] = useState([]);
@@ -91,7 +101,11 @@ export default function App() {
               {m.role === 'assistant' ? (
                 <>
                   {m.content ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                    <div className="md">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
+                        {m.content}
+                      </ReactMarkdown>
+                    </div>
                   ) : (
                     m.pending && !m.error && <span className="thinking">Looking at the data…</span>
                   )}

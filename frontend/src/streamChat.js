@@ -23,7 +23,9 @@ export async function streamChat({ message, conversationId, onToken, signal }) {
     const data = [];
     for (const line of frame.split(/\r?\n/)) {
       if (line.startsWith('event:')) event = line.slice(6).trim();
-      else if (line.startsWith('data:')) data.push(line.slice(5).replace(/^ /, ''));
+      // Spring writes "data:<token>" with no separator space, so a leading space IS token text
+      // (e.g. " world"). Do not strip it, or words run together.
+      else if (line.startsWith('data:')) data.push(line.slice(5));
     }
     const payload = data.join('\n');
     if (event === 'token') onToken(payload);
