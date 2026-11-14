@@ -58,6 +58,18 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <configuration>
+          <buildArgs>
+            <!-- Quick-build mode: far less compile memory/time, slightly slower peak speed. -->
+            <buildArg>-Ob</buildArg>
+            <!-- native-image caps its heap at ~75% of physical RAM; a 8 GB CI runner needs swap, so set it explicitly. -->
+            <buildArg>-J-Xmx12g</buildArg>
+          </buildArgs>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
