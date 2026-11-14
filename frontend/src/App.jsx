@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { streamChat } from './streamChat.js';
+import Login from './Login.jsx';
+import { checkSession, clearToken } from './auth.js';
 
 const SUGGESTIONS = [
   'How many learners have submitted assignments?',
@@ -9,6 +11,8 @@ const SUGGESTIONS = [
   'Which assignments have been submitted, and by how many learners each?',
   'What was submitted most recently?',
 ];
+
+const MAX_MESSAGE_LENGTH = 500; // keep in sync with app.limits.message-max-length on the API
 
 const newId = () => crypto.randomUUID();
 
@@ -22,7 +26,25 @@ const MD_COMPONENTS = {
   a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
 };
 
+/** Gate: the chat is only rendered once the backend has confirmed a valid session. */
 export default function App() {
+  const [authed, setAuthed] = useState(null); // null = checking the stored token
+
+  useEffect(() => {
+    checkSession().then(setAuthed);
+  }, []);
+
+  function signOut() {
+    clearToken();
+    setAuthed(false);
+  }
+
+  if (authed === null) return <div className="login"><p className="thinking">Loading…</p></div>;
+  if (!authed) return <Login onSuccess={() => setAuthed(true)} />;
+  return <Chat onSignOut={signOut} />;
+}
+
+function Chat({ onSignOut }) {
   const [conversationId, setConversationId] = useState(newId);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -57,7 +79,9 @@ export default function App() {
         onToken: (t) => patchLast((m) => ({ ...m, content: m.content + t })),
       });
     } catch (e) {
-      if (e.name !== 'AbortError') {
+      if (e.status === 401) {
+        onSignOut(); // session expired or the access code changed
+      } else if (e.name !== 'AbortError') {
         patchLast((m) => ({ ...m, error: e.message || 'Something went wrong.' }));
       }
     } finally {
@@ -81,7 +105,10 @@ export default function App() {
           <h1>Assignments Assistant</h1>
           <p>Ask about learner assignment submissions</p>
         </div>
-        <button className="ghost" onClick={reset}>New chat</button>
+        <div className="header-actions">
+          <button className="ghost" onClick={reset}>New chat</button>
+          <button className="ghost" onClick={onSignOut}>Sign out</button>
+        </div>
       </header>
 
       <main>
@@ -131,6 +158,7 @@ export default function App() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a question…"
+          maxLength={MAX_MESSAGE_LENGTH}
           autoFocus
         />
         {busy ? (

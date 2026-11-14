@@ -22,7 +22,9 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
         Entry.class,
         EntriesClient.Page.class,
         AssignmentTools.Submission.class,
-        ChatController.ChatRequest.class
+        ChatController.ChatRequest.class,
+        AuthController.LoginRequest.class,
+        AuthController.LoginResponse.class
 })
 class NativeHints {
 

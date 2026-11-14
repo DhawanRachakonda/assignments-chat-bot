@@ -15,6 +15,8 @@ services:
         sync: false # set in the Render dashboard
       - key: APP_CORS_ALLOWED_ORIGINS
         sync: false # e.g. https://assignments-chatbot-ui.onrender.com
+      - key: APP_ACCESS_CODE
+        sync: false # passphrase users type on the sign-in screen; if empty, nobody can sign in
 
   - type: web
     name: assignments-chatbot-ui

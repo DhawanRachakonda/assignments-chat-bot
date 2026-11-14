@@ -4,12 +4,9 @@ name: Build native image
 # more than Render's build environment gives us) and publishes it to GitHub Container Registry.
 # Render then runs the finished image instead of building it.
 
+# Manual only: the compile needs a 16 GB runner, which GitHub provides only for PUBLIC repos.
+# To build: make the repo public, Actions -> Build native image -> Run workflow, then make it private again.
 on:
-  push:
-    branches: [master]
-    paths:
-      - "backend/**"
-      - ".github/workflows/native-image.yml"
   workflow_dispatch:
 
 permissions:

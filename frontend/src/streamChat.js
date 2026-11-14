@@ -1,18 +1,24 @@
+import { apiBase, authHeader, errorMessage } from './auth.js';
+
 /**
  * POSTs a question and consumes the Server-Sent Events stream from Spring Boot.
  * (EventSource only supports GET, so we parse the SSE frames from fetch ourselves.)
  * Calls onToken for each token, resolves when the "done" event arrives.
+ * Throws an Error with .status = 401 when the session is no longer valid.
  */
 export async function streamChat({ message, conversationId, onToken, signal }) {
-  // Empty in dev (Vite proxies /api); set VITE_API_URL to the backend URL in production.
-  const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-  const res = await fetch(`${base}/api/chat/stream`, {
+  const res = await fetch(`${apiBase()}/api/chat/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...authHeader() },
     body: JSON.stringify({ message, conversationId }),
     signal,
   });
-  if (!res.ok || !res.body) throw new Error(`Request failed (${res.status})`);
+  if (!res.ok || !res.body) {
+    // 401 (signed out), 429 (rate limited) and 400 (bad input) carry a readable message from the API.
+    const err = new Error(await errorMessage(res, `Request failed (${res.status})`));
+    err.status = res.status;
+    throw err;
+  }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();

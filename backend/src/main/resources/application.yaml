@@ -25,8 +25,13 @@ spring:
         # JDK HttpClient: lightweight and native-image friendly (Reactor Netty needs extra native flags).
         factory: jdk
 
+  # Hard cap on tool-call rounds per question (normal answers need 2-4).
+  ai.tools.limits.max-total-tool-calls: 6
+
 server:
   port: ${PORT:8080}
+  error:
+    include-message: always # so validation errors (400) carry a readable message
 
 app:
   entries-api:
@@ -34,3 +39,15 @@ app:
     page-size: 100
     cache-ttl-seconds: 30
   cors-allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  # Abuse protection for the public chat endpoint. Override with env vars if needed.
+  # Access-code login. Set APP_ACCESS_CODE (secrets.env locally, Render env var in production).
+  # If it is empty, every login is refused.
+  auth:
+    access-code: ${APP_ACCESS_CODE:}
+    token-ttl-hours: ${APP_TOKEN_TTL_HOURS:12}
+    max-failed-logins-per-minute: 5
+  limits:
+    message-max-length: ${APP_LIMIT_MESSAGE_LENGTH:500}
+    per-ip-per-minute: ${APP_LIMIT_IP_PER_MINUTE:8}
+    per-ip-per-day: ${APP_LIMIT_IP_PER_DAY:100}
+    global-per-minute: ${APP_LIMIT_GLOBAL_PER_MINUTE:40}

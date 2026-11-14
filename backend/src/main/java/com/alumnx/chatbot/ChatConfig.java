@@ -8,6 +8,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import reactor.core.scheduler.Schedulers;
 
@@ -56,9 +57,13 @@ public class ChatConfig implements WebMvcConfigurer {
             """;
 
     private final AppProperties props;
+    private final RateLimitInterceptor rateLimitInterceptor;
+    private final AuthInterceptor authInterceptor;
 
-    ChatConfig(AppProperties props) {
+    ChatConfig(AppProperties props, RateLimitInterceptor rateLimitInterceptor, AuthInterceptor authInterceptor) {
         this.props = props;
+        this.rateLimitInterceptor = rateLimitInterceptor;
+        this.authInterceptor = authInterceptor;
     }
 
     @Bean
@@ -75,6 +80,13 @@ public class ChatConfig implements WebMvcConfigurer {
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(memory)
                         .scheduler(Schedulers.boundedElastic()).build())
                 .build();
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // Order matters: authenticate first, so anonymous requests never use up the rate-limit budget.
+        registry.addInterceptor(authInterceptor).addPathPatterns("/api/chat/**", "/api/auth/session");
+        registry.addInterceptor(rateLimitInterceptor).addPathPatterns("/api/chat/**");
     }
 
     @Override
