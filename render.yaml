@@ -1,9 +1,12 @@
 services:
+  # API: a GraalVM native image built by GitHub Actions (.github/workflows/native-image.yml)
+  # and published to GHCR. Render runs the finished image; it does not build anything.
+  # The GHCR package must be public (or add a registry credential in the Render dashboard).
   - type: web
-    name: assignments-chatbot-api
-    runtime: docker
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
+    name: assignments-chatbot-api-native
+    runtime: image
+    image:
+      url: ghcr.io/dhawanrachakonda/assignments-chatbot-api:latest
     region: singapore # closest to Hyderabad and Azure South India
     plan: free
     healthCheckPath: /actuator/health
@@ -21,4 +24,4 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        sync: false # e.g. https://assignments-chatbot-api.onrender.com
+        sync: false # URL of assignments-chatbot-api-native, e.g. https://assignments-chatbot-api-native.onrender.com
