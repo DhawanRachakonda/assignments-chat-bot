@@ -30,10 +30,12 @@ jobs:
       # Private repos get ~7 GB RAM runners; swap keeps the native-image compile from being OOM-killed.
       - name: Add swap
         run: |
-          sudo fallocate -l 12G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
+          # The runner already uses /swapfile, so add a second swap file on the big /mnt disk.
+          df -h /mnt
+          sudo fallocate -l 12G /mnt/extra.swap
+          sudo chmod 600 /mnt/extra.swap
+          sudo mkswap /mnt/extra.swap
+          sudo swapon /mnt/extra.swap
           free -h
 
       - uses: docker/setup-buildx-action@v3
