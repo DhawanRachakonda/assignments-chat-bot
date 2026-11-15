@@ -16,8 +16,8 @@ Ask natural-language questions about learner assignment submissions
 ## Configuration
 
 `backend/src/main/resources/application.yaml`. Override with env vars or `secrets.env`:
-`AZURE_FOUNDRY_API_KEY`, `AZURE_FOUNDRY_BASE_URL` (default
-`https://your-resource.services.ai.azure.com/openai/v1`), `AZURE_FOUNDRY_MODEL` (default `gpt-6-luna`).
+`AZURE_FOUNDRY_API_KEY`, `AZURE_FOUNDRY_BASE_URL` (required: your Foundry resource, in the form
+`https://<your-resource>.services.ai.azure.com/openai/v1`), `AZURE_FOUNDRY_MODEL` (default `gpt-6-luna`).
 
 ## Data notes
 
